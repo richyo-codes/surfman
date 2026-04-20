@@ -14,12 +14,8 @@ use crate::{ContextAttributes, Gl, SurfaceInfo};
 use crate::{Error, GLApi, SurfaceAccess, SurfaceType};
 use euclid::default::Size2D;
 use glow::Texture;
-use std::env;
 use std::os::raw::c_void;
 use std::sync::Arc;
-
-static MESA_SOFTWARE_RENDERING_ENV_VAR: &str = "LIBGL_ALWAYS_SOFTWARE";
-static MESA_DRI_PRIME_ENV_VAR: &str = "DRI_PRIME";
 
 // FIXME(pcwalton): Is this right, or should it be `TEXTURE_EXTERNAL_OES`?
 const SURFACE_GL_TEXTURE_TARGET: u32 = gl::TEXTURE_2D;
@@ -53,26 +49,8 @@ impl Adapter {
         Adapter::Software
     }
 
-    pub(crate) fn set_environment_variables(&self) {
-        match *self {
-            Adapter::Hardware | Adapter::HardwarePrime => {
-                env::remove_var(MESA_SOFTWARE_RENDERING_ENV_VAR);
-            }
-            Adapter::Software => {
-                env::set_var(MESA_SOFTWARE_RENDERING_ENV_VAR, "1");
-            }
-        }
-
-        match *self {
-            Adapter::Software => {}
-            Adapter::Hardware => {
-                env::remove_var(MESA_DRI_PRIME_ENV_VAR);
-            }
-            Adapter::HardwarePrime => {
-                env::set_var(MESA_DRI_PRIME_ENV_VAR, "1");
-            }
-        }
-    }
+    // Embedders should control these process-wide variables themselves.
+    pub(crate) fn set_environment_variables(&self) {}
 }
 
 /// A thread-local handle to a device.
