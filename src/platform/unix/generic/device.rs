@@ -5,11 +5,7 @@
 use super::connection::{Connection, NativeConnectionWrapper};
 use crate::{Error, GLApi};
 
-use std::env;
 use std::sync::Arc;
-
-static MESA_SOFTWARE_RENDERING_ENV_VAR: &str = "LIBGL_ALWAYS_SOFTWARE";
-static MESA_DRI_PRIME_ENV_VAR: &str = "DRI_PRIME";
 
 /// Represents a hardware display adapter that can be used for rendering (including the CPU).
 ///
@@ -40,26 +36,8 @@ impl Adapter {
         Adapter::Software
     }
 
-    pub(crate) fn set_environment_variables(&self) {
-        match *self {
-            Adapter::Hardware | Adapter::HardwarePrime => {
-                env::remove_var(MESA_SOFTWARE_RENDERING_ENV_VAR);
-            }
-            Adapter::Software => {
-                env::set_var(MESA_SOFTWARE_RENDERING_ENV_VAR, "1");
-            }
-        }
-
-        match *self {
-            Adapter::Software => {}
-            Adapter::Hardware => {
-                env::remove_var(MESA_DRI_PRIME_ENV_VAR);
-            }
-            Adapter::HardwarePrime => {
-                env::set_var(MESA_DRI_PRIME_ENV_VAR, "1");
-            }
-        }
-    }
+    // Embedders should control these process-wide variables themselves.
+    pub(crate) fn set_environment_variables(&self) {}
 }
 
 /// A thread-local handle to a device.
